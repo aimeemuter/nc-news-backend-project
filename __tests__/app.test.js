@@ -10,10 +10,13 @@ beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
 describe("invalid endpoint url", () => {
-  it("404: responds with not found if endpoint not hit", async () => {
+  test("404: responds to the client with an error message if endpoint not hit", async () => {
     const response = await request(app).get("/nonsense").expect(404);
-    const { status } = response;
-    expect(status).toBe(404);
+    const { body } = response;
+    const { message } = body;
+    expect(message).toBe(
+      "This endpoint does not exist... /api provides endpoint information"
+    );
   });
 });
 
@@ -66,6 +69,25 @@ describe("app.js", () => {
       const { body } = response;
       const { message } = body;
       expect(message).toBe("The article ID must be a number");
+    });
+  });
+  describe("/api/articles", () => {
+    test("GET 200: responds to the client with an array of articles", async () => {
+      const response = await request(app).get("/api/articles").expect(200);
+      const { body } = response;
+      const { articles } = body;
+      expect(articles.length).toBe(13);
+      articles.forEach((article) => {
+        expect(typeof article.author).toBe("string");
+        expect(typeof article.title).toBe("string");
+        expect(typeof article.article_id).toBe("number");
+        expect(typeof article.topic).toBe("string");
+        expect(typeof article.created_at).toBe("string");
+        expect(typeof article.votes).toBe("number");
+        expect(typeof article.article_img_url).toBe("string");
+        expect(typeof article.comment_count).toBe("number");
+      });
+      expect(articles).toBeSorted({ key: "created_at", descending: true });
     });
   });
 });
