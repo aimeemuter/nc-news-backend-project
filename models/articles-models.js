@@ -31,5 +31,12 @@ exports.fetchCommentsByArticleId = async (article_id) => {
     `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
     [article_id]
   );
-  return result.rows;
+  if (result.rows.length === 0) {
+    return Promise.reject({
+      status: 404,
+      message: "No comments matching the provided article ID",
+    });
+  } else {
+    return result.rows;
+  }
 };
