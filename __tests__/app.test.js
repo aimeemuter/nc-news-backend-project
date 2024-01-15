@@ -3,6 +3,7 @@ const app = require("../app.js");
 const db = require("../db/connection.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
+const endpointsData = require("../endpoints.json");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -16,6 +17,15 @@ describe("invalid endpoint url", () => {
 });
 
 describe("app.js", () => {
+  describe("/api", () => {
+    it("GET 200: responds to the client with an object describing all the available endpoints", async () => {
+      const response = await request(app).get("/api").expect(200);
+      const { body } = response;
+      const { apiInfo } = body;
+      expect(typeof apiInfo).toBe("object");
+      expect(apiInfo).toEqual(endpointsData);
+    });
+  });
   describe("/api/topics", () => {
     it("GET 200: responds to the client with an array of topics", async () => {
       const response = await request(app).get("/api/topics").expect(200);
