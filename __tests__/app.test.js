@@ -58,13 +58,13 @@ describe("app.js", () => {
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
     });
-    test("GET 404: responds to the client with an error message", async () => {
+    test("GET 404: responds to the client with an error message when the article id is valid but not found", async () => {
       const response = await request(app).get("/api/articles/1000").expect(404);
       const { body } = response;
       const { message } = body;
       expect(message).toBe("No article matching the provided ID");
     });
-    test("GET 400: responds to the client with an error message", async () => {
+    test("GET 400: responds to the client with an error message when the article id is invalid", async () => {
       const response = await request(app).get("/api/articles/abc").expect(400);
       const { body } = response;
       const { message } = body;
@@ -107,6 +107,22 @@ describe("app.js", () => {
         expect(typeof comment.article_id).toBe("number");
       });
       expect(comments).toBeSorted({ key: "created_at", descending: true });
+    });
+    test("GET 404: responds to the client with an error message when the article is is valid but no matching comments are found", async () => {
+      const response = await request(app)
+        .get("/api/articles/1000/comments")
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No comments matching the provided article ID");
+    });
+    test("GET 400: responds to the client with an error message when the article id is invalid", async () => {
+      const response = await request(app)
+        .get("/api/articles/abc/comments")
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Invalid datatype for parameter");
     });
   });
 });
