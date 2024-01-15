@@ -68,7 +68,7 @@ describe("app.js", () => {
       const response = await request(app).get("/api/articles/abc").expect(400);
       const { body } = response;
       const { message } = body;
-      expect(message).toBe("The article ID must be a number");
+      expect(message).toBe("Invalid datatype for parameter");
     });
   });
   describe("/api/articles", () => {
@@ -88,6 +88,25 @@ describe("app.js", () => {
         expect(typeof article.comment_count).toBe("number");
       });
       expect(articles).toBeSorted({ key: "created_at", descending: true });
+    });
+  });
+  describe("/api/articles/:article_id/comments", () => {
+    test("GET 200: responds to the client with an array of all comments for a given article", async () => {
+      const response = await request(app)
+        .get("/api/articles/1/comments")
+        .expect(200);
+      const { body } = response;
+      const { comments } = body;
+      expect(comments.length).toBe(11);
+      comments.forEach((comment) => {
+        expect(typeof comment.comment_id).toBe("number");
+        expect(typeof comment.votes).toBe("number");
+        expect(typeof comment.created_at).toBe("string");
+        expect(typeof comment.author).toBe("string");
+        expect(typeof comment.body).toBe("string");
+        expect(typeof comment.article_id).toBe("number");
+      });
+      expect(comments).toBeSorted({ key: "created_at", descending: true });
     });
   });
 });
