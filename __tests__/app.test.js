@@ -153,8 +153,7 @@ describe("app.js", () => {
       });
       expect(typeof comment.created_at).toBe("string");
       const result = await db.query(
-        `SELECT * FROM comments WHERE article_id = $1`,
-        [13]
+        `SELECT * FROM comments WHERE article_id = 13`
       );
       expect(result.rows.length).toBe(1);
     });
@@ -178,12 +177,12 @@ describe("app.js", () => {
       const { message } = body;
       expect(message).toBe("Invalid datatype for parameter");
     });
-    test("POST 400: responds to the client with an error message when the article_id exists but the username provided does not exist in the users table", async () => {
+    test("POST 404: responds to the client with an error message when the article_id exists but the username provided does not exist in the users table", async () => {
       const commentToPost = { username: "not-a-valid-user", body: "I agree!" };
       const response = await request(app)
         .post("/api/articles/13/comments")
         .send(commentToPost)
-        .expect(400);
+        .expect(404);
       const { body } = response;
       const { message } = body;
       expect(message).toBe("Username does not exist");
@@ -209,10 +208,6 @@ describe("app.js", () => {
     });
   });
   describe("PATCH /api/articles/:article_id", () => {
-    // happy path
-    // check article valid but doesn't exist
-    // check article invalid
-    // check newVote invalid
     test("PATCH 200: responds to the client with the updated article object when inc_votes is positive", async () => {
       const patchData = { inc_votes: 5 };
       const response = await request(app)
