@@ -3,6 +3,7 @@ const {
   fetchArticleById,
   fetchCommentsByArticleId,
   insertComment,
+  updateArticle,
 } = require("../models/articles-models.js");
 
 exports.getArticles = async (request, response, next) => {
@@ -40,6 +41,21 @@ exports.postComment = async (request, response, next) => {
   try {
     const comment = await insertComment(article_id, commentToInsert);
     response.status(201).send({ comment });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.patchArticle = async (request, response, next) => {
+  const { article_id } = request.params;
+  const patchData = request.body;
+  try {
+    const promisesArray = await Promise.all([
+      updateArticle(article_id, patchData),
+      fetchArticleById(article_id),
+    ]);
+    const article = promisesArray[0];
+    response.status(200).send({ article });
   } catch (error) {
     next(error);
   }

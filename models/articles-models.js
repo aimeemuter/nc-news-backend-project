@@ -41,3 +41,19 @@ exports.insertComment = async (article_id, commentToInsert) => {
   );
   return result.rows[0];
 };
+
+exports.updateArticle = async (article_id, patchData) => {
+  if (!(typeof patchData.inc_votes === "number")) {
+    return Promise.reject({
+      status: 400,
+      message: "The value for inc_votes must be a number",
+    });
+  } else {
+    const votesAdjustment = patchData.inc_votes;
+    const result = await db.query(
+      `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`,
+      [votesAdjustment, article_id]
+    );
+    return result.rows[0];
+  }
+};

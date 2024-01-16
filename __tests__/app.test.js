@@ -73,7 +73,7 @@ describe("app.js", () => {
     });
   });
   describe("/api/articles", () => {
-    test("GET 200: responds to the client with an array of articles", async () => {
+    test("GET 200: responds to the client with an array of articles ordered by newest first", async () => {
       const response = await request(app).get("/api/articles").expect(200);
       const { body } = response;
       const { articles } = body;
@@ -91,7 +91,7 @@ describe("app.js", () => {
       expect(articles).toBeSorted({ key: "created_at", descending: true });
     });
   });
-  describe("/api/articles/:article_id/comments", () => {
+  describe("GET /api/articles/:article_id/comments", () => {
     test("GET 200: responds to the client with an array of all comments for a given article, ordered by most recent comment first", async () => {
       const response = await request(app)
         .get("/api/articles/1/comments")
@@ -134,7 +134,7 @@ describe("app.js", () => {
       expect(message).toBe("Invalid datatype for parameter");
     });
   });
-  describe("/api/articles/:article_id/comments", () => {
+  describe("POST /api/articles/:article_id/comments", () => {
     test("POST 201: responds to the client with an object containing the username and body of the comment", async () => {
       const commentToPost = { username: "lurker", body: "I agree!" };
       const response = await request(app)
@@ -206,6 +206,82 @@ describe("app.js", () => {
       expect(withoutUsernameResponse.body.message).toBe(
         "Insufficient data provided"
       );
+    });
+  });
+  describe("PATCH /api/articles/:article_id", () => {
+    // happy path
+    // check article valid but doesn't exist
+    // check article invalid
+    // check newVote invalid
+    test("PATCH 200: responds to the client with the updated article object when inc_votes is positive", async () => {
+      const patchData = { inc_votes: 5 };
+      const response = await request(app)
+        .patch("/api/articles/1")
+        .send(patchData)
+        .expect(200);
+      const { body } = response;
+      const { article } = body;
+      expect(article).toMatchObject({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: "2020-07-09T20:11:00.000Z",
+        votes: 105,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      });
+    });
+    test("PATCH 200: responds to the client with the updated article object when inc_votes is negative and even reduces the votes below zero", async () => {
+      const patchData = { inc_votes: -105 };
+      const response = await request(app)
+        .patch("/api/articles/1")
+        .send(patchData)
+        .expect(200);
+      const { body } = response;
+      const { article } = body;
+      expect(article).toMatchObject({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: "2020-07-09T20:11:00.000Z",
+        votes: -5,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      });
+    });
+    test("PATCH 404: responds to the client with an error message when the article_id is valid but does not exist", async () => {
+      const patchData = { inc_votes: 5 };
+      const response = await request(app)
+        .patch("/api/articles/1000")
+        .send(patchData)
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No article matching the provided ID");
+    });
+    test("PATCH 400: responds to the client with an error message when the article_id is invalid", async () => {
+      const patchData = { inc_votes: 5 };
+      const response = await request(app)
+        .patch("/api/articles/abc")
+        .send(patchData)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Invalid datatype for parameter");
+    });
+    test("PATCH 400: responds to the client with an error message when the inc_votes patch value is invalid", async () => {
+      const patchData = { inc_votes: "NaN" };
+      const response = await request(app)
+        .patch("/api/articles/abc")
+        .send(patchData)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("The value for inc_votes must be a number");
     });
   });
 });
