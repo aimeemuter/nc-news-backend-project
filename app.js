@@ -46,7 +46,7 @@ app.use((error, request, response, next) => {
         .send({ message: "No article matching the provided ID" });
     }
     if (error.constraint.includes("author_fkey")) {
-      response.status(400).send({ message: "Username does not exist" });
+      response.status(404).send({ message: "Username does not exist" });
     }
   }
   if (error.code === "23502") {
