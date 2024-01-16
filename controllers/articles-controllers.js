@@ -2,6 +2,7 @@ const {
   fetchArticles,
   fetchArticleById,
   fetchCommentsByArticleId,
+  insertComment,
 } = require("../models/articles-models.js");
 
 exports.getArticles = async (request, response, next) => {
@@ -22,8 +23,23 @@ exports.getArticleById = async (request, response, next) => {
 exports.getCommentsByArticleId = async (request, response, next) => {
   const { article_id } = request.params;
   try {
-    const comments = await fetchCommentsByArticleId(article_id);
+    const promisesArray = await Promise.all([
+      fetchCommentsByArticleId(article_id),
+      fetchArticleById(article_id),
+    ]);
+    const comments = promisesArray[0];
     response.status(200).send({ comments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.postComment = async (request, response, next) => {
+  const { article_id } = request.params;
+  const commentToInsert = request.body;
+  try {
+    const comment = await insertComment(article_id, commentToInsert);
+    response.status(201).send({ comment });
   } catch (error) {
     next(error);
   }

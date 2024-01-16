@@ -48,6 +48,7 @@ describe("app.js", () => {
       const { body } = response;
       const { article } = body;
       expect(article).toMatchObject({
+        article_id: 1,
         title: "Living in the shadow of a great man",
         topic: "mitch",
         author: "butter_bridge",
@@ -91,7 +92,7 @@ describe("app.js", () => {
     });
   });
   describe("/api/articles/:article_id/comments", () => {
-    test("GET 200: responds to the client with an array of all comments for a given article", async () => {
+    test("GET 200: responds to the client with an array of all comments for a given article, ordered by most recent comment first", async () => {
       const response = await request(app)
         .get("/api/articles/1/comments")
         .expect(200);
@@ -104,17 +105,25 @@ describe("app.js", () => {
         expect(typeof comment.created_at).toBe("string");
         expect(typeof comment.author).toBe("string");
         expect(typeof comment.body).toBe("string");
-        expect(typeof comment.article_id).toBe("number");
+        expect(comment.article_id).toBe(1);
       });
       expect(comments).toBeSorted({ key: "created_at", descending: true });
     });
-    test("GET 404: responds to the client with an error message when the article is is valid but no matching comments are found", async () => {
+    test("GET 200: responds to the client with an empty comments array when the article exists but has no associated comments", async () => {
+      const response = await request(app)
+        .get("/api/articles/10/comments")
+        .expect(200);
+      const { body } = response;
+      const { comments } = body;
+      expect(comments).toEqual([]);
+    });
+    test("GET 404: responds to the client with an error message when the article is is valid but not found", async () => {
       const response = await request(app)
         .get("/api/articles/1000/comments")
         .expect(404);
       const { body } = response;
       const { message } = body;
-      expect(message).toBe("No comments matching the provided article ID");
+      expect(message).toBe("No article matching the provided ID");
     });
     test("GET 400: responds to the client with an error message when the article id is invalid", async () => {
       const response = await request(app)
@@ -123,6 +132,80 @@ describe("app.js", () => {
       const { body } = response;
       const { message } = body;
       expect(message).toBe("Invalid datatype for parameter");
+    });
+  });
+  describe("/api/articles/:article_id/comments", () => {
+    test("POST 201: responds to the client with an object containing the username and body of the comment", async () => {
+      const commentToPost = { username: "lurker", body: "I agree!" };
+      const response = await request(app)
+        .post("/api/articles/13/comments")
+        .send(commentToPost)
+        .expect(201);
+      const { body } = response;
+      const { comment } = body;
+      expect(Object.keys(comment).length).toBe(6);
+      expect(comment).toMatchObject({
+        comment_id: 19,
+        body: "I agree!",
+        article_id: 13,
+        author: "lurker",
+        votes: 0,
+      });
+      expect(typeof comment.created_at).toBe("string");
+      const result = await db.query(
+        `SELECT * FROM comments WHERE article_id = $1`,
+        [13]
+      );
+      expect(result.rows.length).toBe(1);
+    });
+    test("POST 404: responds to the client with an error message when the article id is valid but not found", async () => {
+      const commentToPost = { username: "lurker", body: "I agree!" };
+      const response = await request(app)
+        .post("/api/articles/1000/comments")
+        .send(commentToPost)
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No article matching the provided ID");
+    });
+    test("POST 400: responds to the client with an error message when the article id is invalid", async () => {
+      const commentToPost = { username: "lurker", body: "I agree!" };
+      const response = await request(app)
+        .post("/api/articles/abc/comments")
+        .send(commentToPost)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Invalid datatype for parameter");
+    });
+    test("POST 400: responds to the client with an error message when the article_id exists but the username provided does not exist in the users table", async () => {
+      const commentToPost = { username: "not-a-valid-user", body: "I agree!" };
+      const response = await request(app)
+        .post("/api/articles/13/comments")
+        .send(commentToPost)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Username does not exist");
+    });
+    test("POST 400: responds to the client with an error message when the article_id exists but the username or body is not provided", async () => {
+      const commentToPostWithoutBody = { username: "lurker" };
+      const commentToPostWithoutUsername = { body: "I agree!" };
+      const withoutBodyResponse = await request(app)
+        .post("/api/articles/13/comments")
+        .send(commentToPostWithoutBody)
+        .expect(400);
+      const withoutUsernameResponse = await request(app)
+        .post("/api/articles/13/comments")
+        .send(commentToPostWithoutUsername)
+        .expect(400);
+
+      expect(withoutBodyResponse.body.message).toBe(
+        "Insufficient data provided"
+      );
+      expect(withoutUsernameResponse.body.message).toBe(
+        "Insufficient data provided"
+      );
     });
   });
 });

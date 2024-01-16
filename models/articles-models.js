@@ -31,12 +31,13 @@ exports.fetchCommentsByArticleId = async (article_id) => {
     `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
     [article_id]
   );
-  if (result.rows.length === 0) {
-    return Promise.reject({
-      status: 404,
-      message: "No comments matching the provided article ID",
-    });
-  } else {
-    return result.rows;
-  }
+  return result.rows;
+};
+
+exports.insertComment = async (article_id, commentToInsert) => {
+  const result = await db.query(
+    `INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *`,
+    [article_id, commentToInsert.username, commentToInsert.body]
+  );
+  return result.rows[0];
 };
