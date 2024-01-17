@@ -10,18 +10,17 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
   await db.query(`DROP TABLE IF EXISTS articles;`);
   await db.query(`DROP TABLE IF EXISTS users;`);
   await db.query(`DROP TABLE IF EXISTS topics;`);
-  const topicsTablePromise = await db.query(`
+  await db.query(`
       CREATE TABLE topics (
         slug VARCHAR PRIMARY KEY,
         description VARCHAR
       );`);
-  const usersTablePromise = await db.query(`
+  await db.query(`
       CREATE TABLE users (
         username VARCHAR PRIMARY KEY,
         name VARCHAR NOT NULL,
-        avatar_url VARCHAR
+        avatar_url VARCHAR DEFAULT 'https://images.pexels.com/photos/577514/pexels-photo-577514.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
       );`);
-  await Promise.all([topicsTablePromise, usersTablePromise]);
   await db.query(`
       CREATE TABLE articles (
         article_id SERIAL PRIMARY KEY,
@@ -46,7 +45,7 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
     "INSERT INTO topics (slug, description) VALUES %L;",
     topicData.map(({ slug, description }) => [slug, description])
   );
-  const topicsPromise = await db.query(insertTopicsQueryStr);
+  await db.query(insertTopicsQueryStr);
   const insertUsersQueryStr = format(
     "INSERT INTO users ( username, name, avatar_url) VALUES %L;",
     userData.map(({ username, name, avatar_url }) => [
@@ -55,8 +54,7 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
       avatar_url,
     ])
   );
-  const usersPromise = await db.query(insertUsersQueryStr);
-  await Promise.all([topicsPromise, usersPromise]);
+  await db.query(insertUsersQueryStr);
   const formattedArticleData = articleData.map(convertTimestampToDate);
   const insertArticlesQueryStr = format(
     "INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *;",
