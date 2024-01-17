@@ -328,4 +328,16 @@ describe("app.js", () => {
       expect(message).toBe("Invalid datatype for parameter");
     });
   });
+  describe("GET /api/users", () => {
+    test("GET 200: responds to the client with an array of users", async () => {
+      const response = await request(app).get("/api/users").expect(200);
+      const { body } = response;
+      const { users } = body;
+      users.forEach((user) => {
+        expect(typeof user.username).toBe("string");
+        expect(typeof user.name).toBe("string");
+        expect(typeof user.avatar_url).toBe("string");
+      });
+    });
+  });
 });
