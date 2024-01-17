@@ -30,7 +30,7 @@ describe("app.js", () => {
       expect(apiInfo).toEqual(endpointsData);
     });
   });
-  describe("/api/topics", () => {
+  describe("GET /api/topics", () => {
     test("GET 200: responds to the client with an array of topics", async () => {
       const response = await request(app).get("/api/topics").expect(200);
       const { body } = response;
@@ -42,7 +42,7 @@ describe("app.js", () => {
       });
     });
   });
-  describe("/api/articles/:article_id", () => {
+  describe("GET /api/articles/:article_id", () => {
     test("GET 200: responds to the client with the article matching the id", async () => {
       const response = await request(app).get("/api/articles/1").expect(200);
       const { body } = response;
@@ -72,7 +72,7 @@ describe("app.js", () => {
       expect(message).toBe("Invalid datatype for parameter");
     });
   });
-  describe("/api/articles", () => {
+  describe("GET /api/articles", () => {
     test("GET 200: responds to the client with an array of articles ordered by newest first", async () => {
       const response = await request(app).get("/api/articles").expect(200);
       const { body } = response;
@@ -277,6 +277,35 @@ describe("app.js", () => {
       const { body } = response;
       const { message } = body;
       expect(message).toBe("The value for inc_votes must be a number");
+    });
+  });
+  describe("DELETE /api/comments/:comment_id", () => {
+    test("DELETE 204: responds to the client with no content when deletion is successful", async () => {
+      const response = await request(app)
+        .delete("/api/comments/18")
+        .expect(204);
+      const { body } = response;
+      expect(body).toEqual({});
+      const result = await db.query(
+        `SELECT * FROM comments WHERE article_id = 1`
+      );
+      expect(result.rows.length).toBe(10);
+    });
+    test("DELETE 404: responds to the client with an error message when the comment_id is valid but does not exist", async () => {
+      const response = await request(app)
+        .delete("/api/comments/1000")
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No comment matching the provided ID");
+    });
+    test("DELETE 400: responds to the client with an error message when the comment_id is invalid", async () => {
+      const response = await request(app)
+        .delete("/api/comments/abc")
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Invalid datatype for parameter");
     });
   });
 });
