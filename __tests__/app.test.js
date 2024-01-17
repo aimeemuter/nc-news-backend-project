@@ -5,9 +5,16 @@ const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
 const endpointsData = require("../endpoints.json");
 const { describe, test, expect } = require("@jest/globals");
+let consoleSpy;
 
-beforeEach(() => seed(testData));
-afterAll(() => db.end());
+beforeEach(() => {
+  consoleSpy = jest.spyOn(console, "log");
+  return seed(testData);
+});
+afterAll(() => {
+  consoleSpy.mockRestore();
+  return db.end();
+});
 
 describe("invalid endpoint url", () => {
   test("404: responds to the client with an error message if endpoint not hit", async () => {
@@ -17,6 +24,12 @@ describe("invalid endpoint url", () => {
     expect(message).toBe(
       "This endpoint does not exist... /api provides endpoint information"
     );
+  });
+});
+
+describe("consoleSpy", () => {
+  test("The log method has not been called on console", () => {
+    expect(consoleSpy).not.toHaveBeenCalled();
   });
 });
 
