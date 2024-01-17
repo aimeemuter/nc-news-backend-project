@@ -248,6 +248,26 @@ describe("app.js", () => {
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
     });
+    test("PATCH 200: responds to the client with the unchanged article object when no patch data provided", async () => {
+      const patchData = {};
+      const response = await request(app)
+        .patch("/api/articles/1")
+        .send(patchData)
+        .expect(200);
+      const { body } = response;
+      const { article } = body;
+      expect(article).toMatchObject({
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: "2020-07-09T20:11:00.000Z",
+        votes: 100,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      });
+    });
     test("PATCH 404: responds to the client with an error message when the article_id is valid but does not exist", async () => {
       const patchData = { inc_votes: 5 };
       const response = await request(app)
