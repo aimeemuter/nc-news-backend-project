@@ -43,13 +43,16 @@ exports.insertComment = async (article_id, commentToInsert) => {
 };
 
 exports.updateArticle = async (article_id, patchData) => {
-  if (!(typeof patchData.inc_votes === "number")) {
+  if (
+    typeof patchData.inc_votes !== "number" &&
+    patchData.inc_votes !== undefined
+  ) {
     return Promise.reject({
       status: 400,
       message: "The value for inc_votes must be a number",
     });
   } else {
-    const votesAdjustment = patchData.inc_votes;
+    const votesAdjustment = patchData.inc_votes || 0;
     const result = await db.query(
       `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`,
       [votesAdjustment, article_id]
