@@ -1,13 +1,24 @@
 const db = require("../db/connection.js");
+const { doesTopicExist } = require("../utils/app-utils.js");
 
-exports.fetchArticles = async () => {
-  const result = await db.query(
+exports.fetchArticles = async ({ topic }) => {
+  const sqlQueryArray = [
     `SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INT) AS comment_count
     FROM articles
-    LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC`
-  );
+    LEFT JOIN comments ON articles.article_id = comments.article_id`,
+    `GROUP BY articles.article_id
+    ORDER BY articles.created_at DESC`,
+  ];
+  if (topic) {
+    const isTopic = await doesTopicExist(topic);
+    if (isTopic) {
+      sqlQueryArray.splice(1, 0, `WHERE topic = '${topic}'`);
+    } else {
+      return [];
+    }
+  }
+  const sqlQuery = sqlQueryArray.join(` `);
+  const result = await db.query(sqlQuery);
   return result.rows;
 };
 
