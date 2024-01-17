@@ -21,7 +21,7 @@ describe("invalid endpoint url", () => {
 });
 
 describe("app.js", () => {
-  describe("/api", () => {
+  describe("GET /api", () => {
     test("GET 200: responds to the client with an object describing all the available endpoints", async () => {
       const response = await request(app).get("/api").expect(200);
       const { body } = response;
@@ -89,6 +89,33 @@ describe("app.js", () => {
         expect(typeof article.comment_count).toBe("number");
       });
       expect(articles).toBeSorted({ key: "created_at", descending: true });
+    });
+    test("GET 200: responds to the client with an array of articles ordered by newest first that relate to the queried topic", async () => {
+      const response = await request(app)
+        .get("/api/articles?topic=mitch")
+        .expect(200);
+      const { body } = response;
+      const { articles } = body;
+      expect(articles.length).toBe(12);
+      articles.forEach((article) => {
+        expect(typeof article.author).toBe("string");
+        expect(typeof article.title).toBe("string");
+        expect(typeof article.article_id).toBe("number");
+        expect(article.topic).toBe("mitch");
+        expect(typeof article.created_at).toBe("string");
+        expect(typeof article.votes).toBe("number");
+        expect(typeof article.article_img_url).toBe("string");
+        expect(typeof article.comment_count).toBe("number");
+      });
+      expect(articles).toBeSorted({ key: "created_at", descending: true });
+    });
+    test("GET 200: responds to the client with an empty array when there are no articles matching the queried topic", async () => {
+      const response = await request(app)
+        .get("/api/articles?topic=dogs")
+        .expect(200);
+      const { body } = response;
+      const { articles } = body;
+      expect(articles).toEqual([]);
     });
   });
   describe("GET /api/articles/:article_id/comments", () => {
