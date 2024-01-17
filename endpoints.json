@@ -10,7 +10,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles",
+    "description": "serves an array of all articles by provided queries",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [

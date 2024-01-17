@@ -7,7 +7,8 @@ const {
 } = require("../models/articles-models.js");
 
 exports.getArticles = async (request, response, next) => {
-  const articles = await fetchArticles();
+  const queries = request.query;
+  const articles = await fetchArticles(queries);
   response.status(200).send({ articles });
 };
 
