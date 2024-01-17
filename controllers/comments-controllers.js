@@ -1,5 +1,5 @@
 const { removeComment } = require("../models/comments-models");
-const { fetchCommentByCommentId } = require("../utils/find-by-id");
+const { fetchCommentByCommentId } = require("../utils/app-utils");
 
 exports.deleteComment = async (request, response, next) => {
   const { comment_id } = request.params;
