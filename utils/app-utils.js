@@ -14,3 +14,8 @@ exports.fetchCommentByCommentId = async (comment_id) => {
     return result.rows;
   }
 };
+
+exports.doesTopicExist = async (slug) => {
+  const result = await db.query(`SELECT * FROM topics WHERE slug = $1`, [slug]);
+  return result.rows.length > 0;
+};
