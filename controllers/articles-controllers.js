@@ -8,8 +8,12 @@ const {
 
 exports.getArticles = async (request, response, next) => {
   const queries = request.query;
-  const articles = await fetchArticles(queries);
-  response.status(200).send({ articles });
+  try {
+    const articles = await fetchArticles(queries);
+    response.status(200).send({ articles });
+  } catch (error) {
+    next(error);
+  }
 };
 
 exports.getArticleById = async (request, response, next) => {
