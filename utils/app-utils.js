@@ -19,3 +19,10 @@ exports.doesTopicExist = async (slug) => {
   const result = await db.query(`SELECT * FROM topics WHERE slug = $1`, [slug]);
   return result.rows.length > 0;
 };
+
+exports.doesAuthorExist = async (username) => {
+  const result = await db.query(`SELECT * FROM users WHERE username = $1`, [
+    username,
+  ]);
+  return result.rows.length > 0;
+};
