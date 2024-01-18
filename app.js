@@ -17,7 +17,10 @@ const {
   handlePsqlErrors,
   handleServerErrors,
 } = require("./error-handling.js");
-const { getUsers } = require("./controllers/users-controllers.js");
+const {
+  getUsers,
+  getUserByUsername,
+} = require("./controllers/users-controllers.js");
 
 app.use(express.json());
 
@@ -34,6 +37,7 @@ app.patch("/api/articles/:article_id", patchArticle);
 app.delete("/api/comments/:comment_id", deleteComment);
 
 app.get("/api/users", getUsers);
+app.get("/api/users/:username", getUserByUsername);
 
 app.all("*", (request, response) => {
   response.status(404).send({

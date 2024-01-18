@@ -408,4 +408,25 @@ describe("app.js", () => {
       });
     });
   });
+  describe("GET /api/users/:username", () => {
+    test("GET 200: responds to the client with a user with the username passed in as the parameter", async () => {
+      const response = await request(app).get("/api/users/lurker").expect(200);
+      const { body } = response;
+      const { user } = body;
+      expect(user).toMatchObject({
+        username: "lurker",
+        name: "do_nothing",
+        avatar_url:
+          "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+      });
+    });
+    test("GET 404: responds to the client with an error message if the username is valid but does not exist", async () => {
+      const response = await request(app)
+        .get("/api/users/not_a_user")
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No user matching the username provided");
+    });
+  });
 });
