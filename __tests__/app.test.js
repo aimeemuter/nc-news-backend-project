@@ -123,15 +123,29 @@ describe("app.js", () => {
       });
       expect(articles).toBeSorted({ key: "created_at", descending: true });
     });
-    test("GET 200: responds to the client with an empty array when there are no articles matching the queried topic or author", async () => {
+    test("GET 200: responds to the client with an empty array when there are no articles matching an existing topic or author", async () => {
       const topicResponse = await request(app)
-        .get("/api/articles?topic=dogs")
+        .get("/api/articles?topic=paper")
         .expect(200);
       expect(topicResponse.body.articles).toEqual([]);
       const authorResponse = await request(app)
-        .get("/api/articles?author=banana")
+        .get("/api/articles?author=lurker")
         .expect(200);
       expect(authorResponse.body.articles).toEqual([]);
+    });
+    test("GET 404: responds to the client with an error message when there are no articles matching the queried topic or author", async () => {
+      const topicResponse = await request(app)
+        .get("/api/articles?topic=dogs")
+        .expect(404);
+      expect(topicResponse.body.message).toBe(
+        "No topic matching the topic query"
+      );
+      const authorResponse = await request(app)
+        .get("/api/articles?author=banana")
+        .expect(404);
+      expect(authorResponse.body.message).toBe(
+        "No author matching the author query"
+      );
     });
     test("GET 200: responds to the client with an array of articles ordered and sorted to match provided queries", async () => {
       const response = await request(app)
