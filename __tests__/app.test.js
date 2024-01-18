@@ -123,13 +123,26 @@ describe("app.js", () => {
       });
       expect(articles).toBeSorted({ key: "created_at", descending: true });
     });
-    test("GET 200: responds to the client with an empty array when there are no articles matching the queried topic", async () => {
-      const response = await request(app)
+    test("GET 200: responds to the client with an empty array when there are no articles matching the queried topic or author", async () => {
+      const topicResponse = await request(app)
         .get("/api/articles?topic=dogs")
+        .expect(200);
+      expect(topicResponse.body.articles).toEqual([]);
+      const authorResponse = await request(app)
+        .get("/api/articles?author=banana")
+        .expect(200);
+      expect(authorResponse.body.articles).toEqual([]);
+    });
+    test("GET 200: responds to the client with an array of articles ordered and sorted to match provided queries", async () => {
+      const response = await request(app)
+        .get(
+          "/api/articles?topic=mitch&author=icellusedkars&sort_by=title&order=asc"
+        )
         .expect(200);
       const { body } = response;
       const { articles } = body;
-      expect(articles).toEqual([]);
+      expect(articles.length).toBe(6);
+      expect(articles).toBeSorted({ key: "title", descending: false });
     });
   });
   describe("GET /api/articles/:article_id/comments", () => {
