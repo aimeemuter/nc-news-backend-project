@@ -4,6 +4,7 @@ const {
   fetchCommentsByArticleId,
   insertComment,
   updateArticle,
+  insertArticle,
 } = require("../models/articles-models.js");
 
 exports.getArticles = async (request, response, next) => {
@@ -61,6 +62,16 @@ exports.patchArticle = async (request, response, next) => {
     ]);
     const article = promisesArray[0];
     response.status(200).send({ article });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.postArticle = async (request, response, next) => {
+  const articleToInsert = request.body;
+  try {
+    const article = await insertArticle(articleToInsert);
+    response.status(201).send({ article });
   } catch (error) {
     next(error);
   }
