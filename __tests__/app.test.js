@@ -621,3 +621,5 @@ describe("app.js", () => {
     });
   });
 });
+
+// check pipeline is working
