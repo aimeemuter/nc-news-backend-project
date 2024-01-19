@@ -1,5 +1,6 @@
 const db = require("../db/connection.js");
 const { doesTopicExist, doesAuthorExist } = require("../utils/app-utils.js");
+const format = require("pg-format");
 
 exports.fetchArticles = async (queries) => {
   let { topic, author, sort_by = "created_at", order = "DESC" } = queries;
@@ -105,4 +106,22 @@ exports.updateArticle = async (article_id, patchData) => {
     );
     return result.rows[0];
   }
+};
+
+exports.insertArticle = async (articleToInsert) => {
+  const {
+    title,
+    topic,
+    author,
+    body,
+    article_img_url = "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700",
+  } = articleToInsert;
+  const insertArticleQueryString = format(
+    `INSERT INTO articles (title, topic, author, body, article_img_url) 
+    VALUES (%L) RETURNING *`,
+    [title, topic, author, body, article_img_url]
+  );
+  const result = await db.query(insertArticleQueryString);
+  const article = result.rows[0];
+  return { ...article, comment_count: 0 };
 };
