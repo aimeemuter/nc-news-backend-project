@@ -576,4 +576,39 @@ describe("app.js", () => {
       });
     });
   });
+  describe("POST /api/topics", () => {
+    test("POST 201: responds to the client with the posted topic", async () => {
+      const topicData = {
+        slug: "tarantulas",
+        description: "chunky, fuzzy, and cute",
+      };
+      const response = await request(app).post("/api/topics").send(topicData);
+      const { body } = response;
+      const { topic } = body;
+      expect(topic).toEqual({
+        slug: "tarantulas",
+        description: "chunky, fuzzy, and cute",
+      });
+    });
+    test("POST 201: responds to the client with the topic if only the slug is provided", async () => {
+      const topicData = { slug: "tarantulas" };
+      const response = await request(app)
+        .post("/api/topics")
+        .send(topicData)
+        .expect(201);
+      const { body } = response;
+      const { topic } = body;
+      expect(topic).toEqual({
+        slug: "tarantulas",
+      });
+    });
+    test("POST 400: responds to the client with an error message when the slug is not provided", async () => {
+      const topicData = { description: "chunky, fuzzy, and cute" };
+      const response = await request(app)
+        .post("/api/topics")
+        .send(topicData)
+        .expect(400);
+      expect(response.body.message).toBe("Insufficient data provided");
+    });
+  });
 });
