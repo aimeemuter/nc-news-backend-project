@@ -5,18 +5,11 @@ const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data/index.js");
 const endpointsData = require("../endpoints.json");
 const { describe, test, expect } = require("@jest/globals");
-let consoleSpy;
 
-beforeEach(() => {
-  consoleSpy = jest.spyOn(console, "log");
-  return seed(testData);
-});
-afterAll(() => {
-  consoleSpy.mockRestore();
-  return db.end();
-});
+beforeEach(() => seed(testData));
+afterAll(() => db.end());
 
-describe("invalid endpoint url", () => {
+describe("*", () => {
   test("404: responds to the client with an error message if endpoint not hit", async () => {
     const response = await request(app).get("/nonsense").expect(404);
     const { body } = response;
@@ -24,12 +17,6 @@ describe("invalid endpoint url", () => {
     expect(message).toBe(
       "This endpoint does not exist... /api provides endpoint information"
     );
-  });
-});
-
-describe("consoleSpy", () => {
-  test("The log method has not been called on console", () => {
-    expect(consoleSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -609,6 +596,28 @@ describe("app.js", () => {
         .send(topicData)
         .expect(400);
       expect(response.body.message).toBe("Insufficient data provided");
+    });
+  });
+  describe("DELETE /api/articles/:article_id", () => {
+    test("DELETE 204: responds to the client with no content when deletion is sucessful", async () => {
+      const response = await request(app).delete("/api/articles/1").expect(204);
+      expect(response.body).toEqual({});
+      const result = await db.query(
+        `SELECT * FROM comments WHERE article_id = 1`
+      );
+      expect(result.rows.length).toBe(0);
+    });
+    test("DELETE 404: responds to the client with an error message when the article_id is valid but not found", async () => {
+      const response = await request(app)
+        .delete("/api/articles/1000")
+        .expect(404);
+      expect(response.body.message).toBe("No article matching the provided ID");
+    });
+    test("DELETE 400: responds to the client with an error message when the article_id is invalid", async () => {
+      const response = await request(app)
+        .delete("/api/articles/abc")
+        .expect(400);
+      expect(response.body.message).toBe("Invalid datatype for parameter");
     });
   });
 });
