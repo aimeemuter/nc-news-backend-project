@@ -3,6 +3,7 @@ const app = express();
 const {
   getApiInfo,
   getTopics,
+  postTopic,
 } = require("./controllers/topics-controllers.js");
 const {
   getArticles,
@@ -31,6 +32,7 @@ app.use(express.json());
 app.get("/api", getApiInfo);
 
 app.get("/api/topics", getTopics);
+app.post("/api/topics", postTopic);
 
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
