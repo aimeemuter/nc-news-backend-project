@@ -11,7 +11,10 @@ const {
   postComment,
   patchArticle,
 } = require("./controllers/articles-controllers.js");
-const { deleteComment } = require("./controllers/comments-controllers.js");
+const {
+  deleteComment,
+  patchComment,
+} = require("./controllers/comments-controllers.js");
 const {
   handleCustomErrors,
   handlePsqlErrors,
@@ -35,6 +38,7 @@ app.post("/api/articles/:article_id/comments", postComment);
 app.patch("/api/articles/:article_id", patchArticle);
 
 app.delete("/api/comments/:comment_id", deleteComment);
+app.patch("/api/comments/:comment_id", patchComment);
 
 app.get("/api/users", getUsers);
 app.get("/api/users/:username", getUserByUsername);
