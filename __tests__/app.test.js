@@ -621,5 +621,3 @@ describe("app.js", () => {
     });
   });
 });
-
-// test pipeline
