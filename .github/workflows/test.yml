@@ -5,29 +5,30 @@ on:
     branches:
       - main
 
-test-utils:
-  runs-on: ubuntu-latest
-  steps:
-    - name: checkout and clone repo
-      uses: actions/checkout@v3
-    - name: install dependencies
-      run: npm install
-    - name: test utils
-      run: npm run test-utils
+jobs:
+  test-utils:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout and clone repo
+        uses: actions/checkout@v3
+      - name: install dependencies
+        run: npm install
+      - name: test utils
+        run: npm run test-utils
 
-test-app:
-  needs: test-utils
-  runs-on: ubuntu-latest
-  steps:
-    - name: checkout and clone repo
-      uses: actions/checkout@v3
-    - name: setup PSQL
-      uses: harmon758/postgresql-action@v1
-      with:
-        postgresql db: test_db
-        postgresql user: test_user
-        postgresql password: test_password
-    - name: install dependencies
-      run: npm install
-    - name: test app
-      run: PGDATABASE=test_db PGUSER=test_user PGPASSWORD=test_password npm test
+  test-app:
+    needs: test-utils
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout and clone repo
+        uses: actions/checkout@v3
+      - name: setup PSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql db: test_db
+          postgresql user: test_user
+          postgresql password: test_password
+      - name: install dependencies
+        run: npm install
+      - name: test app
+        run: PGDATABASE=test_db PGUSER=test_user PGPASSWORD=test_password npm test
