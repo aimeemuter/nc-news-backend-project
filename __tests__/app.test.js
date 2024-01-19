@@ -429,4 +429,76 @@ describe("app.js", () => {
       expect(message).toBe("No user matching the username provided");
     });
   });
+  describe("PATCH /api/comments/:comment_id", () => {
+    test("PATCH 200: responds to the client with the updated comment whether the inc_votes is positive or negative", async () => {
+      const positivePatchData = { inc_votes: 1 };
+      const positiveResponse = await request(app)
+        .patch("/api/comments/1")
+        .send(positivePatchData)
+        .expect(200);
+      expect(positiveResponse.body.comment).toMatchObject({
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 17,
+        author: "butter_bridge",
+        article_id: 9,
+        created_at: "2020-04-06T12:17:00.000Z",
+      });
+      const negativePatchData = { inc_votes: -1 };
+      const negativeResponse = await request(app)
+        .patch("/api/comments/2")
+        .send(negativePatchData)
+        .expect(200);
+      expect(negativeResponse.body.comment).toMatchObject({
+        body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+        votes: 13,
+        author: "butter_bridge",
+        article_id: 1,
+        created_at: "2020-10-31T03:03:00.000Z",
+      });
+    });
+    test("PATCH 200: responds to the client with the unmodified comment when the patch data is an empty object", async () => {
+      const patchData = {};
+      const response = await request(app)
+        .patch("/api/comments/1")
+        .send(patchData)
+        .expect(200);
+      expect(response.body.comment).toMatchObject({
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        article_id: 9,
+        created_at: "2020-04-06T12:17:00.000Z",
+      });
+    });
+    test("PATCH 404: responds to the client with an error message when the comment_id is valid but does not exist", async () => {
+      const patchData = { inc_votes: 1 };
+      const response = await request(app)
+        .patch("/api/comments/1000")
+        .send(patchData)
+        .expect(404);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("No comment matching the provided ID");
+    });
+    test("PATCH 400: responds to the client with an error message when the comment_id is invalid", async () => {
+      const patchData = { inc_votes: 1 };
+      const response = await request(app)
+        .patch("/api/comments/abc")
+        .send(patchData)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("Invalid datatype for parameter");
+    });
+    test("PATCH 400: responds to the client with an error message when the inc_votes value is not a number", async () => {
+      const patchData = { inc_votes: "NaN" };
+      const response = await request(app)
+        .patch("/api/comments/1")
+        .send(patchData)
+        .expect(400);
+      const { body } = response;
+      const { message } = body;
+      expect(message).toBe("The value for inc_votes must be a number");
+    });
+  });
 });
