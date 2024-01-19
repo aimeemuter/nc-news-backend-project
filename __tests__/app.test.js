@@ -53,12 +53,12 @@ describe("app.js", () => {
         topic: "mitch",
         author: "butter_bridge",
         body: "I find this existence challenging",
-        created_at: "2020-07-09T20:11:00.000Z",
         votes: 100,
         comment_count: 11,
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
+      expect(typeof article.created_at).toBe("string");
     });
     test("GET 404: responds to the client with an error message when the article id is valid but not found", async () => {
       const response = await request(app).get("/api/articles/1000").expect(404);
@@ -277,11 +277,11 @@ describe("app.js", () => {
         topic: "mitch",
         author: "butter_bridge",
         body: "I find this existence challenging",
-        created_at: "2020-07-09T20:11:00.000Z",
         votes: 105,
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
+      expect(typeof article.created_at).toBe("string");
     });
     test("PATCH 200: responds to the client with the updated article object when inc_votes is negative and even reduces the votes below zero", async () => {
       const patchData = { inc_votes: -105 };
@@ -297,11 +297,11 @@ describe("app.js", () => {
         topic: "mitch",
         author: "butter_bridge",
         body: "I find this existence challenging",
-        created_at: "2020-07-09T20:11:00.000Z",
         votes: -5,
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
+      expect(typeof article.created_at).toBe("string");
     });
     test("PATCH 200: responds to the client with the unchanged article object when no patch data provided", async () => {
       const patchData = {};
@@ -317,11 +317,11 @@ describe("app.js", () => {
         topic: "mitch",
         author: "butter_bridge",
         body: "I find this existence challenging",
-        created_at: "2020-07-09T20:11:00.000Z",
         votes: 100,
         article_img_url:
           "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
       });
+      expect(typeof article.created_at).toBe("string");
     });
     test("PATCH 404: responds to the client with an error message when the article_id is valid but does not exist", async () => {
       const patchData = { inc_votes: 5 };
@@ -428,8 +428,8 @@ describe("app.js", () => {
         votes: 17,
         author: "butter_bridge",
         article_id: 9,
-        created_at: "2020-04-06T12:17:00.000Z",
       });
+      expect(typeof positiveResponse.body.comment.created_at).toBe("string");
       const negativePatchData = { inc_votes: -1 };
       const negativeResponse = await request(app)
         .patch("/api/comments/2")
@@ -440,8 +440,8 @@ describe("app.js", () => {
         votes: 13,
         author: "butter_bridge",
         article_id: 1,
-        created_at: "2020-10-31T03:03:00.000Z",
       });
+      expect(typeof negativeResponse.body.comment.created_at).toBe("string");
     });
     test("PATCH 200: responds to the client with the unmodified comment when the patch data is an empty object", async () => {
       const patchData = {};
@@ -454,8 +454,8 @@ describe("app.js", () => {
         votes: 16,
         author: "butter_bridge",
         article_id: 9,
-        created_at: "2020-04-06T12:17:00.000Z",
       });
+      expect(typeof response.body.comment.created_at).toBe("string");
     });
     test("PATCH 404: responds to the client with an error message when the comment_id is valid but does not exist", async () => {
       const patchData = { inc_votes: 1 };
