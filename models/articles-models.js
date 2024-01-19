@@ -46,7 +46,6 @@ exports.fetchArticles = async (queries) => {
         return [];
       }
     }
-
     const sqlQuery = sqlQueryArray.join(` `);
     const result = await db.query(sqlQuery);
     return result.rows;
@@ -124,4 +123,8 @@ exports.insertArticle = async (articleToInsert) => {
   const result = await db.query(insertArticleQueryString);
   const article = result.rows[0];
   return { ...article, comment_count: 0 };
+};
+
+exports.removeArticle = async (article_id) => {
+  await db.query(`DELETE FROM articles WHERE article_id = $1`, [article_id]);
 };
