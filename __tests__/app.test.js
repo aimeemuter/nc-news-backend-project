@@ -501,4 +501,79 @@ describe("app.js", () => {
       expect(message).toBe("The value for inc_votes must be a number");
     });
   });
+  describe("POST /api/articles", () => {
+    test("POST 201: responds to the client with the posted article using the default article_img_url when no url provided", async () => {
+      const articleData = {
+        title: "My First Article",
+        topic: "paper",
+        author: "lurker",
+        body: "Hello everyone, my name is lurker and I have been a lurker for 200 days now.",
+      };
+      const response = await request(app)
+        .post("/api/articles")
+        .send(articleData)
+        .expect(201);
+      const { body } = response;
+      const { article } = body;
+      expect(article).toMatchObject({
+        article_id: 14,
+        title: "My First Article",
+        topic: "paper",
+        author: "lurker",
+        body: "Hello everyone, my name is lurker and I have been a lurker for 200 days now.",
+        votes: 0,
+        article_img_url:
+          "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700",
+        comment_count: 0,
+      });
+      expect(typeof article.created_at).toBe("string");
+    });
+    test("POST 201: responds to the client with the posted article when a url is provided", async () => {
+      const articleData = {
+        title: "My First Article",
+        topic: "paper",
+        author: "lurker",
+        body: "Hello everyone, my name is lurker and I have been a lurker for 200 days now.",
+        article_img_url:
+          "https://www.shutterstock.com/image-vector/two-pairs-eyes-dark-260nw-430264000.jpg",
+      };
+      const response = await request(app)
+        .post("/api/articles")
+        .send(articleData)
+        .expect(201);
+      const { body } = response;
+      const { article } = body;
+      expect(article).toMatchObject({
+        article_id: 14,
+        title: "My First Article",
+        topic: "paper",
+        author: "lurker",
+        body: "Hello everyone, my name is lurker and I have been a lurker for 200 days now.",
+        votes: 0,
+        article_img_url:
+          "https://www.shutterstock.com/image-vector/two-pairs-eyes-dark-260nw-430264000.jpg",
+        comment_count: 0,
+      });
+      expect(typeof article.created_at).toBe("string");
+    });
+    test("POST 400: responds to the client with an error message when any of the required properties are not provided", async () => {
+      const requiredProperties = ["title", "topic", "author", "body"];
+      const articleData = {
+        title: "My First Article",
+        topic: "paper",
+        author: "lurker",
+        body: "Hello everyone, my name is lurker and I have been a lurker for 200 days now.",
+      };
+      const promisesArray = requiredProperties.map((property) => {
+        const articleCopy = { ...articleData };
+        delete articleCopy[property];
+        return request(app).post("/api/articles").send(articleCopy);
+      });
+      const responsesArray = await Promise.all(promisesArray);
+      responsesArray.forEach((response) => {
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Insufficient data provided");
+      });
+    });
+  });
 });
