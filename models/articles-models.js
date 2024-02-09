@@ -10,7 +10,14 @@ exports.fetchArticles = async (queries) => {
   if (sort_by) sort_by = sort_by.toLowerCase();
   const orderOptions = ["ASC", "DESC"];
   const isOrderValid = orderOptions.includes(order);
-  const sortByOptions = ["title", "topic", "author", "created_at", "votes"];
+  const sortByOptions = [
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+    "comment_count",
+  ];
   const isSortByValid = sortByOptions.includes(sort_by);
   if (!isOrderValid || !isSortByValid) {
     return Promise.reject({
