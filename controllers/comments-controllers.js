@@ -16,11 +16,10 @@ exports.patchComment = async (request, response, next) => {
   const { comment_id } = request.params;
   const patchData = request.body;
   try {
-    const promisesArray = await Promise.all([
+    const [comment] = await Promise.all([
       updateComment(comment_id, patchData),
       fetchCommentByCommentId(comment_id),
     ]);
-    const comment = promisesArray[0];
     response.status(200).send({ comment });
   } catch (error) {
     next(error);

@@ -52,14 +52,15 @@ exports.fetchArticles = async (queries) => {
       }
     }
     const sqlQuery = sqlQueryArray.join(` `);
-    console.log(sqlQuery);
-    const result = await db.query(sqlQuery);
-    return result.rows;
+    const { rows: articles } = await db.query(sqlQuery);
+    return articles;
   }
 };
 
 exports.fetchArticleById = async (article_id) => {
-  const result = await db.query(
+  const {
+    rows: [article],
+  } = await db.query(
     `SELECT articles.*, CAST(COUNT(comment_id) AS INT) AS comment_count 
     FROM articles 
     LEFT JOIN comments 
@@ -68,30 +69,32 @@ exports.fetchArticleById = async (article_id) => {
     GROUP BY articles.article_id`,
     [article_id]
   );
-  if (result.rows.length === 0) {
+  if (article) {
+    return article;
+  } else {
     return Promise.reject({
       status: 404,
       message: "No article matching the provided ID",
     });
-  } else {
-    return result.rows[0];
   }
 };
 
 exports.fetchCommentsByArticleId = async (article_id) => {
-  const result = await db.query(
+  const { rows: comments } = await db.query(
     `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
     [article_id]
   );
-  return result.rows;
+  return comments;
 };
 
 exports.insertComment = async (article_id, commentToInsert) => {
-  const result = await db.query(
+  const {
+    rows: [comment],
+  } = await db.query(
     `INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *`,
     [article_id, commentToInsert.username, commentToInsert.body]
   );
-  return result.rows[0];
+  return comment;
 };
 
 exports.updateArticle = async (article_id, patchData) => {
@@ -105,11 +108,13 @@ exports.updateArticle = async (article_id, patchData) => {
     });
   } else {
     const votesAdjustment = patchData.inc_votes || 0;
-    const result = await db.query(
+    const {
+      rows: [article],
+    } = await db.query(
       `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`,
       [votesAdjustment, article_id]
     );
-    return result.rows[0];
+    return article;
   }
 };
 
@@ -126,8 +131,9 @@ exports.insertArticle = async (articleToInsert) => {
     VALUES (%L) RETURNING *`,
     [title, topic, author, body, article_img_url]
   );
-  const result = await db.query(insertArticleQueryString);
-  const article = result.rows[0];
+  const {
+    rows: [article],
+  } = await db.query(insertArticleQueryString);
   return { ...article, comment_count: 0 };
 };
 
