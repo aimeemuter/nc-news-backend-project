@@ -15,12 +15,14 @@ exports.updateComment = async (comment_id, patchData) => {
     });
   } else {
     const votesAdjustment = patchData.inc_votes || 0;
-    const result = await db.query(
+    const {
+      rows: [comment],
+    } = await db.query(
       `UPDATE comments 
       SET votes = votes + $1 
       WHERE comment_id = $2 RETURNING *`,
       [votesAdjustment, comment_id]
     );
-    return result.rows[0];
+    return comment;
   }
 };
