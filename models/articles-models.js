@@ -4,21 +4,17 @@ const format = require("pg-format");
 
 exports.fetchArticles = async (queries) => {
   let { topic, author, sort_by = "created_at", order = "DESC" } = queries;
+
   if (topic) topic = topic.toLowerCase();
   if (author) author = author.toLowerCase();
   if (order) order = order.toUpperCase();
   if (sort_by) sort_by = sort_by.toLowerCase();
+
   const orderOptions = ["ASC", "DESC"];
   const isOrderValid = orderOptions.includes(order);
-  const sortByOptions = [
-    "title",
-    "topic",
-    "author",
-    "created_at",
-    "votes",
-    "comment_count",
-  ];
+  const sortByOptions = ["title", "created_at", "votes", "comment_count"];
   const isSortByValid = sortByOptions.includes(sort_by);
+
   if (!isOrderValid || !isSortByValid) {
     return Promise.reject({
       status: 400,
@@ -29,16 +25,20 @@ exports.fetchArticles = async (queries) => {
       `SELECT articles.article_id, title, topic, articles.author, articles.created_at, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INT) AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id`,
-      `GROUP BY articles.article_id
-    ORDER BY articles.${sort_by} ${order}`,
+      `GROUP BY articles.article_id`,
     ];
+
+    if (sort_by === "comment_count") {
+      sqlQueryArray.push(`ORDER BY ${sort_by} ${order}`);
+    } else {
+      sqlQueryArray.push(`ORDER BY articles.${sort_by} ${order}`);
+    }
+
     if (topic || author) {
-      const promisesArray = await Promise.all([
+      const [isTopic, isAuthor] = await Promise.all([
         doesTopicExist(topic),
         doesAuthorExist(author),
       ]);
-      const isTopic = promisesArray[0];
-      const isAuthor = promisesArray[1];
       if (isTopic && !isAuthor) {
         sqlQueryArray.splice(1, 0, `WHERE topic = '${topic}'`);
       } else if (isAuthor && !isTopic) {
@@ -49,11 +49,10 @@ exports.fetchArticles = async (queries) => {
           0,
           `WHERE topic = '${topic}' AND articles.author = '${author}'`
         );
-      } else {
-        return [];
       }
     }
     const sqlQuery = sqlQueryArray.join(` `);
+    console.log(sqlQuery);
     const result = await db.query(sqlQuery);
     return result.rows;
   }

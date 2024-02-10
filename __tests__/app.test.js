@@ -145,6 +145,17 @@ describe("app.js", () => {
       expect(articles.length).toBe(6);
       expect(articles).toBeSorted({ key: "title", descending: false });
     });
+    test("GET 200: responds to the client with an array of articles sorted by comment_count", async () => {
+      const response = await request(app)
+        .get(
+          "/api/articles?topic=mitch&author=icellusedkars&sort_by=comment_count&order=asc"
+        )
+        .expect(200);
+      const { body } = response;
+      const { articles } = body;
+      expect(articles.length).toBe(6);
+      expect(articles).toBeSorted({ key: "comment_count", descending: false });
+    });
   });
   describe("GET /api/articles/:article_id/comments", () => {
     test("GET 200: responds to the client with an array of all comments for a given article, ordered by most recent comment first", async () => {
