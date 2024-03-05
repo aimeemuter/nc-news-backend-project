@@ -1,7 +1,5 @@
 # Northcoders News API
 
-This page is best viewed as a preview: Ctrl + Shift + V or Command + Shift + V
-
 # Hosted Version: https://nc-news-application.onrender.com/
 
 # Project Summary:
