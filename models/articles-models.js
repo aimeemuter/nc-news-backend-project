@@ -52,11 +52,7 @@ exports.fetchArticles = async (queries) => {
       }
     }
     const sqlQuery = sqlQueryArray.join(` `);
-    console.log("probably executes to here");
-    console.log(db.totalCount);
-    console.log(Object.keys(db));
     const { rows: articles } = await db.query(sqlQuery);
-    console.log("probably fails before here");
     return articles;
   }
 };

@@ -16,6 +16,4 @@ if (ENV === "production") {
   config.max = 2;
 }
 
-console.log(config);
-
 module.exports = new Pool(config);
